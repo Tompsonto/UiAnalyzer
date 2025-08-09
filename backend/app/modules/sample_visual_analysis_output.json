@@ -1,0 +1,150 @@
+{
+  "score": 73,
+  "issues": [
+    {
+      "type": "contrast",
+      "selector": ".low-contrast-text",
+      "bbox": {
+        "x": 20,
+        "y": 150,
+        "width": 250,
+        "height": 18
+      },
+      "severity": "medium",
+      "message": "Contrast ratio 3.2:1 fails WCAG AA (requires 4.5:1)"
+    },
+    {
+      "type": "contrast",
+      "selector": "button.cta-secondary",
+      "bbox": {
+        "x": 300,
+        "y": 400,
+        "width": 120,
+        "height": 40
+      },
+      "severity": "high",
+      "message": "Contrast ratio 2.1:1 fails WCAG AA (requires 4.5:1)"
+    },
+    {
+      "type": "typography",
+      "selector": ".small-print",
+      "bbox": {
+        "x": 20,
+        "y": 200,
+        "width": 180,
+        "height": 12
+      },
+      "severity": "high",
+      "message": "Font size 11px below minimum 16px for desktop"
+    },
+    {
+      "type": "typography",
+      "selector": ".tight-spacing",
+      "bbox": {
+        "x": 20,
+        "y": 220,
+        "width": 300,
+        "height": 16
+      },
+      "severity": "medium",
+      "message": "Line height 1.1 below recommended 1.3 minimum"
+    },
+    {
+      "type": "typography",
+      "selector": ".long-paragraph",
+      "bbox": {
+        "x": 50,
+        "y": 300,
+        "width": 1200,
+        "height": 20
+      },
+      "severity": "low",
+      "message": "Line length ~125 characters exceeds 90 character limit"
+    },
+    {
+      "type": "tap_target",
+      "selector": "button.tiny-btn",
+      "bbox": {
+        "x": 50,
+        "y": 250,
+        "width": 30,
+        "height": 28
+      },
+      "severity": "medium",
+      "message": "Tap target 30x28px below 44x44px minimum"
+    },
+    {
+      "type": "tap_target",
+      "selector": "a.small-link",
+      "bbox": {
+        "x": 100,
+        "y": 250,
+        "width": 25,
+        "height": 20
+      },
+      "severity": "high",
+      "message": "Tap target 25x20px below 44x44px minimum"
+    },
+    {
+      "type": "overlap",
+      "selector": ".modal ∩ .header",
+      "bbox": {
+        "x": 0,
+        "y": 0,
+        "width": 100,
+        "height": 60
+      },
+      "severity": "medium",
+      "message": "Elements overlap by 500px² (12.5%)"
+    },
+    {
+      "type": "overlap",
+      "selector": ".sidebar ∩ .content",
+      "bbox": {
+        "x": 200,
+        "y": 100,
+        "width": 250,
+        "height": 400
+      },
+      "severity": "medium",
+      "message": "Elements overlap by 1200px² (15.2%)"
+    },
+    {
+      "type": "density",
+      "selector": "region_0_0",
+      "bbox": {
+        "x": 100,
+        "y": 50,
+        "width": 40,
+        "height": 30
+      },
+      "severity": "medium",
+      "message": "High interactive element density: 23 elements in 1000x800px region"
+    },
+    {
+      "type": "alignment",
+      "selector": "row_y_320",
+      "bbox": {
+        "x": 35,
+        "y": 320,
+        "width": 80,
+        "height": 30
+      },
+      "severity": "low",
+      "message": "Column alignment deviation 12px exceeds 8px threshold"
+    }
+  ],
+  "features": {
+    "contrast_score": 82.0,
+    "typography_score": 71.0,
+    "tap_target_score": 85.0,
+    "overlap_score": 92.0,
+    "density_score": 85.0,
+    "alignment_score": 95.0,
+    "viewport_width": 1920,
+    "viewport_height": 1080,
+    "is_mobile": false,
+    "total_elements": 34,
+    "total_issues": 11
+  }
+}

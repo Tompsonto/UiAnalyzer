@@ -217,6 +217,9 @@ class WebsiteRenderer:
         # Get CSS data and computed styles
         css_data = await self._extract_css_data(page)
         
+        # Get detailed element data for visual analysis
+        element_data = await self._extract_element_data(page)
+        
         # Get text content
         text_data = await self._extract_text_content(page)
         
@@ -232,6 +235,7 @@ class WebsiteRenderer:
             **metadata,
             **dom_data,
             **css_data,
+            **element_data,
             **text_data,
             **screenshots,
             **technical_data,
@@ -507,6 +511,131 @@ class WebsiteRenderer:
             }
         """)
     
+    async def _extract_element_data(self, page: Page) -> Dict[str, Any]:
+        """Extract detailed element data with bounding boxes for visual analysis"""
+        return await page.evaluate("""
+            () => {
+                const elements = [];
+                
+                // Select elements to analyze (visible text elements and interactive elements)
+                const selectors = [
+                    'h1, h2, h3, h4, h5, h6',
+                    'p, span, div',
+                    'button, a',
+                    'input, textarea, select',
+                    '.btn, .cta, .button',
+                    '[onclick]', '[role="button"]'
+                ];
+                
+                const allElements = new Set();
+                
+                // Collect unique elements from all selectors
+                selectors.forEach(selector => {
+                    try {
+                        const selected = document.querySelectorAll(selector);
+                        selected.forEach(el => allElements.add(el));
+                    } catch (e) {
+                        // Skip invalid selectors
+                    }
+                });
+                
+                // Process each element
+                Array.from(allElements).forEach((element, index) => {
+                    try {
+                        // Skip if element is not visible or has no content
+                        const rect = element.getBoundingClientRect();
+                        const style = window.getComputedStyle(element);
+                        const text = element.textContent?.trim() || '';
+                        
+                        // Skip invisible elements
+                        if (rect.width === 0 || rect.height === 0 || 
+                            style.display === 'none' || 
+                            style.visibility === 'hidden' || 
+                            style.opacity === '0') {
+                            return;
+                        }
+                        
+                        // Skip if no meaningful content (unless it's interactive)
+                        const isInteractive = element.matches('button, a, input, textarea, select, [onclick], [role="button"]') ||
+                                            element.classList.contains('btn') ||
+                                            element.classList.contains('button') ||
+                                            element.classList.contains('cta');
+                        
+                        if (!text && !isInteractive) {
+                            return;
+                        }
+                        
+                        // Create selector for element
+                        let selector = element.tagName.toLowerCase();
+                        if (element.id) {
+                            selector += '#' + element.id;
+                        } else if (element.className) {
+                            const className = element.className.split(' ')[0];
+                            if (className) {
+                                selector += '.' + className;
+                            }
+                        }
+                        
+                        // Add index if selector might not be unique
+                        selector += `:nth-of-type(${Array.from(element.parentNode.children).indexOf(element) + 1})`;
+                        
+                        elements.push({
+                            selector: selector,
+                            text: text,
+                            styles: {
+                                color: style.color,
+                                backgroundColor: style.backgroundColor,
+                                fontSize: style.fontSize,
+                                fontWeight: style.fontWeight,
+                                lineHeight: style.lineHeight,
+                                fontFamily: style.fontFamily,
+                                textAlign: style.textAlign,
+                                padding: style.padding,
+                                margin: style.margin,
+                                border: style.border,
+                                borderRadius: style.borderRadius,
+                                display: style.display,
+                                position: style.position,
+                                zIndex: style.zIndex
+                            },
+                            bbox: {
+                                x: Math.round(rect.left + window.scrollX),
+                                y: Math.round(rect.top + window.scrollY),
+                                width: Math.round(rect.width),
+                                height: Math.round(rect.height)
+                            },
+                            tagName: element.tagName.toLowerCase(),
+                            isInteractive: isInteractive,
+                            hasText: text.length > 0
+                        });
+                    } catch (e) {
+                        // Skip problematic elements
+                        console.warn('Error processing element:', e);
+                    }
+                });
+                
+                // Limit to prevent too much data (keep most important elements)
+                const sortedElements = elements
+                    .sort((a, b) => {
+                        // Prioritize interactive elements and text content
+                        if (a.isInteractive && !b.isInteractive) return -1;
+                        if (!a.isInteractive && b.isInteractive) return 1;
+                        if (a.hasText && !b.hasText) return -1;
+                        if (!a.hasText && b.hasText) return 1;
+                        // Then by size (larger elements first)
+                        return (b.bbox.width * b.bbox.height) - (a.bbox.width * a.bbox.height);
+                    })
+                    .slice(0, 100); // Limit to 100 elements
+                
+                return {
+                    elements: sortedElements,
+                    element_count: elements.length,
+                    viewport_width: window.innerWidth,
+                    viewport_height: window.innerHeight
+                };
+            }
+        """)
+    
     async def _extract_text_content(self, page: Page) -> Dict[str, Any]:
         """Extract clean text content for analysis"""
         return await page.evaluate("""
@@ -546,16 +675,14 @@ class WebsiteRenderer:
             # Full page screenshot
             full_screenshot = await page.screenshot(
                 type='png',
-                full_page=True,
-                quality=85
+                full_page=True
             )
             screenshots['full_page'] = base64.b64encode(full_screenshot).decode()
             
             # Viewport screenshot (above the fold)
             viewport_screenshot = await page.screenshot(
                 type='png',
-                full_page=False,
-                quality=85
+                full_page=False
             )
             screenshots['viewport'] = base64.b64encode(viewport_screenshot).decode()
             
@@ -563,13 +690,12 @@ class WebsiteRenderer:
             await page.set_viewport_size({"width": 375, "height": 667})  # iPhone viewport
             mobile_screenshot = await page.screenshot(
                 type='png',
-                full_page=False,
-                quality=85
+                full_page=False
             )
             screenshots['mobile_viewport'] = base64.b64encode(mobile_screenshot).decode()
             
             # Reset viewport
-            await page.set_viewport_size({"width": settings.VIEWPORT_WIDTH, "height": settings.VIEWPORT_HEIGHT})
+            await page.set_viewport_size({"width": 1920, "height": 1080})
             
         except Exception as e:
             logger.error(f"Screenshot generation error: {str(e)}")

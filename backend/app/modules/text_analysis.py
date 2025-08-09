@@ -83,7 +83,7 @@ class TextAnalyzer:
             flesch_score = textstat.flesch_reading_ease(text)
             
             # Flesch-Kincaid Grade Level
-            fk_grade = textstat.flesch_kincaid().grade
+            fk_grade = textstat.flesch_kincaid_grade(text)
             
             # Gunning Fog Index
             fog_index = textstat.gunning_fog(text)
@@ -97,20 +97,18 @@ class TextAnalyzer:
                 self.issues.append({
                     'type': 'readability',
                     'severity': 'high',
-                    'metric': 'Flesch Reading Ease',
-                    'value': flesch_score,
-                    'message': 'Text is very difficult to read',
-                    'suggestion': 'Simplify language and use shorter sentences'
+                    'element': 'Page content',
+                    'message': f'Content too complex for most readers (Flesch score: {flesch_score:.0f})',
+                    'suggestion': 'Simplify language, use shorter sentences, and replace complex words'
                 })
             elif flesch_score < 50:  # Difficult
                 score -= 15
                 self.issues.append({
                     'type': 'readability',
                     'severity': 'medium',
-                    'metric': 'Flesch Reading Ease',
-                    'value': flesch_score,
-                    'message': 'Text is somewhat difficult to read',
-                    'suggestion': 'Consider simplifying complex sentences'
+                    'element': 'Page content',
+                    'message': f'Content may challenge average readers (Flesch score: {flesch_score:.0f})',
+                    'suggestion': 'Simplify some complex sentences and replace difficult words'
                 })
             
             # Penalize high grade levels
@@ -119,10 +117,9 @@ class TextAnalyzer:
                 self.issues.append({
                     'type': 'readability',
                     'severity': 'high',
-                    'metric': 'Grade Level',
-                    'value': fk_grade,
-                    'message': f'Text requires {fk_grade:.1f} grade reading level',
-                    'suggestion': 'Target 8th-10th grade reading level for broader audience'
+                    'element': 'Page content',
+                    'message': f'Reading level too high (Grade {fk_grade:.1f}) - requires college education',
+                    'suggestion': 'Target 8th-10th grade reading level using simpler vocabulary'
                 })
             
             # Penalize high fog index
@@ -131,10 +128,9 @@ class TextAnalyzer:
                 self.issues.append({
                     'type': 'readability',
                     'severity': 'medium',
-                    'metric': 'Gunning Fog',
-                    'value': fog_index,
-                    'message': 'Complex sentence structure detected',
-                    'suggestion': 'Break up long sentences and reduce complex words'
+                    'element': 'Page content',
+                    'message': f'Sentences too complex (Fog index: {fog_index:.1f}) confusing readers',
+                    'suggestion': 'Break long sentences into shorter ones and reduce complex vocabulary'
                 })
             
         except Exception as e:
@@ -158,18 +154,18 @@ class TextAnalyzer:
             self.issues.append({
                 'type': 'structure',
                 'severity': 'high',
-                'element': 'H1',
-                'message': 'No H1 heading found',
-                'suggestion': 'Add a clear H1 heading that describes the page purpose'
+                'element': 'Page heading structure',
+                'message': 'Missing main heading (H1) hurts usability and SEO',
+                'suggestion': 'Add a descriptive H1 heading that clearly states the page purpose'
             })
         elif h1_count > 1:
             score -= 15
             self.issues.append({
                 'type': 'structure',
                 'severity': 'medium',
-                'element': 'H1',
-                'message': f'Multiple H1 headings found: {h1_count}',
-                'suggestion': 'Use only one H1 per page for better SEO and structure'
+                'element': 'Page heading structure',
+                'message': f'Multiple main headings ({h1_count} H1 tags) confuse users and hurt SEO',
+                'suggestion': 'Use only one H1 per page, converting others to H2 or H3'
             })
         
         # Check heading hierarchy
@@ -178,9 +174,9 @@ class TextAnalyzer:
             self.issues.append({
                 'type': 'structure',
                 'severity': 'low',
-                'element': 'Headings',
-                'message': 'Heading hierarchy is not logical',
-                'suggestion': 'Use headings in order (H1 → H2 → H3) without skipping levels'
+                'element': 'Page heading structure',
+                'message': 'Heading hierarchy skips levels confusing screen readers',
+                'suggestion': 'Structure headings sequentially (H1 → H2 → H3) without skipping levels'
             })
         
         # Check for wall of text (paragraphs too long)
@@ -197,9 +193,9 @@ class TextAnalyzer:
             self.issues.append({
                 'type': 'structure',
                 'severity': 'medium',
-                'element': 'Paragraphs',
-                'message': f'{long_paragraphs} very long paragraphs detected',
-                'suggestion': 'Break up long paragraphs into shorter, scannable chunks'
+                'element': 'Paragraph structure',
+                'message': f'Long paragraphs ({long_paragraphs} over 300 chars) are hard to scan',
+                'suggestion': 'Break long paragraphs into shorter chunks of 2-4 sentences each'
             })
         
         return max(0, score)
@@ -230,20 +226,18 @@ class TextAnalyzer:
                 self.issues.append({
                     'type': 'complexity',
                     'severity': 'high',
-                    'metric': 'Sentence Length',
-                    'value': avg_sentence_length,
-                    'message': f'Average sentence length is {avg_sentence_length:.1f} words',
-                    'suggestion': 'Keep sentences under 20 words for better readability'
+                    'element': 'Sentence structure',
+                    'message': f'Sentences too long (average: {avg_sentence_length:.1f} words) causing reader fatigue',
+                    'suggestion': 'Keep most sentences under 20 words by splitting complex ideas'
                 })
             elif avg_sentence_length > 20:
                 score -= 10
                 self.issues.append({
                     'type': 'complexity',
                     'severity': 'low',
-                    'metric': 'Sentence Length',
-                    'value': avg_sentence_length,
-                    'message': f'Sentences are somewhat long ({avg_sentence_length:.1f} words average)',
-                    'suggestion': 'Consider shortening some sentences'
+                    'element': 'Sentence structure',
+                    'message': f'Some sentences could be shorter (average: {avg_sentence_length:.1f} words)',
+                    'suggestion': 'Shorten sentences by removing unnecessary words or splitting thoughts'
                 })
         
         # Check for passive voice (basic detection)
@@ -265,10 +259,9 @@ class TextAnalyzer:
                 self.issues.append({
                     'type': 'complexity',
                     'severity': 'medium',
-                    'metric': 'Passive Voice',
-                    'value': passive_percentage,
-                    'message': f'{passive_percentage:.1f}% of sentences use passive voice',
-                    'suggestion': 'Use active voice to make content more engaging and clear'
+                    'element': 'Writing style',
+                    'message': f'Too much passive voice ({passive_percentage:.1f}%) makes content feel distant',
+                    'suggestion': 'Use active voice ("We solved it" vs "It was solved") for engagement'
                 })
         
         # Check for jargon and complex words
@@ -281,10 +274,9 @@ class TextAnalyzer:
             self.issues.append({
                 'type': 'complexity',
                 'severity': 'low',
-                'metric': 'Complex Words',
-                'value': long_word_percentage,
-                'message': f'{long_word_percentage:.1f}% of words are complex (8+ characters)',
-                'suggestion': 'Replace complex words with simpler alternatives where possible'
+                'element': 'Vocabulary',
+                'message': f'Some words too complex ({long_word_percentage:.1f}% are 8+ chars)',
+                'suggestion': 'Replace complex words with simpler alternatives ("use" vs "utilize")'
             })
         
         return max(0, score)
@@ -324,7 +316,7 @@ class TextAnalyzer:
                 'sentence_count': len(re.split(r'[.!?]+', text)),
                 'paragraph_count': len(text.split('\\n\\n')),
                 'flesch_reading_ease': textstat.flesch_reading_ease(text),
-                'flesch_kincaid_grade': textstat.flesch_kincaid().grade,
+                'flesch_kincaid_grade': textstat.flesch_kincaid_grade(text),
                 'gunning_fog': textstat.gunning_fog(text),
                 'smog_index': textstat.smog_index(text)
             }

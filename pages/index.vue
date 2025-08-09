@@ -81,34 +81,81 @@
         </div>
         
         <!-- Score Breakdown -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-blue-50 p-6 rounded-lg">
-            <h5 class="font-semibold text-blue-800 mb-2">Visual Score</h5>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <h5 class="font-semibold text-blue-800 mb-2 text-sm">Visual Score</h5>
             <div class="flex items-center">
-              <div class="flex-1 bg-blue-200 rounded-full h-3 mr-4">
-                <div class="bg-blue-600 h-3 rounded-full" :style="`width: ${analysisResult.visual_score}%`"></div>
+              <div class="flex-1 bg-blue-200 rounded-full h-2 mr-3">
+                <div class="bg-blue-600 h-2 rounded-full" :style="`width: ${analysisResult.visual_score}%`"></div>
               </div>
-              <span class="font-bold text-blue-800">{{ Math.round(analysisResult.visual_score) }}</span>
+              <span class="font-bold text-blue-800 text-sm">{{ Math.round(analysisResult.visual_score) }}</span>
             </div>
           </div>
           
-          <div class="bg-green-50 p-6 rounded-lg">
-            <h5 class="font-semibold text-green-800 mb-2">Text & SEO Score</h5>
+          <div class="bg-green-50 p-4 rounded-lg">
+            <h5 class="font-semibold text-green-800 mb-2 text-sm">Text & SEO</h5>
             <div class="flex items-center">
-              <div class="flex-1 bg-green-200 rounded-full h-3 mr-4">
-                <div class="bg-green-600 h-3 rounded-full" :style="`width: ${analysisResult.text_score}%`"></div>
+              <div class="flex-1 bg-green-200 rounded-full h-2 mr-3">
+                <div class="bg-green-600 h-2 rounded-full" :style="`width: ${analysisResult.text_score}%`"></div>
               </div>
-              <span class="font-bold text-green-800">{{ Math.round(analysisResult.text_score) }}</span>
+              <span class="font-bold text-green-800 text-sm">{{ Math.round(analysisResult.text_score) }}</span>
             </div>
           </div>
           
-          <div class="bg-purple-50 p-6 rounded-lg">
-            <h5 class="font-semibold text-purple-800 mb-2">Clarity Score ✨</h5>
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <h5 class="font-semibold text-purple-800 mb-2 text-sm">Accessibility</h5>
             <div class="flex items-center">
-              <div class="flex-1 bg-purple-200 rounded-full h-3 mr-4">
-                <div class="bg-purple-600 h-3 rounded-full" :style="`width: ${analysisResult.clarity_score}%`"></div>
+              <div class="flex-1 bg-purple-200 rounded-full h-2 mr-3">
+                <div class="bg-purple-600 h-2 rounded-full" :style="`width: ${analysisResult.accessibility_score || 0}%`"></div>
               </div>
-              <span class="font-bold text-purple-800">{{ Math.round(analysisResult.clarity_score) }}</span>
+              <span class="font-bold text-purple-800 text-sm">{{ Math.round(analysisResult.accessibility_score || 0) }}</span>
+            </div>
+          </div>
+          
+          <div class="bg-orange-50 p-4 rounded-lg">
+            <h5 class="font-semibold text-orange-800 mb-2 text-sm">CTA Score</h5>
+            <div class="flex items-center">
+              <div class="flex-1 bg-orange-200 rounded-full h-2 mr-3">
+                <div class="bg-orange-600 h-2 rounded-full" :style="`width: ${analysisResult.cta_score || 0}%`"></div>
+              </div>
+              <span class="font-bold text-orange-800 text-sm">{{ Math.round(analysisResult.cta_score || 0) }}</span>
+            </div>
+          </div>
+          
+          <div class="bg-indigo-50 p-4 rounded-lg">
+            <h5 class="font-semibold text-indigo-800 mb-2 text-sm">Multi-Device</h5>
+            <div class="flex items-center">
+              <div class="flex-1 bg-indigo-200 rounded-full h-2 mr-3">
+                <div class="bg-indigo-600 h-2 rounded-full" :style="`width: ${analysisResult.multi_viewport?.cache_hit ? 100 : 75}%`"></div>
+              </div>
+              <span class="font-bold text-indigo-800 text-sm">{{ analysisResult.multi_viewport?.viewports_analyzed || 0 }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Enhanced Analysis Sections -->
+        <div v-if="analysisResult.enhanced_analysis" class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mb-8">
+          <h4 class="text-xl font-semibold text-purple-800 mb-4">🚀 Enhanced Analysis Available</h4>
+          <p class="text-purple-700 mb-4">This analysis includes advanced accessibility testing, CTA optimization, and multi-viewport rendering.</p>
+          
+          <!-- CTA Analysis Summary -->
+          <div v-if="analysisResult.cta_analysis?.total_ctas" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg border border-purple-100">
+              <h6 class="font-semibold text-gray-800 mb-2">CTAs Found</h6>
+              <div class="text-2xl font-bold text-purple-600">{{ analysisResult.cta_analysis.total_ctas }}</div>
+              <div class="text-sm text-gray-600">{{ analysisResult.cta_analysis.above_fold_ctas }} above fold</div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg border border-purple-100" v-if="analysisResult.cta_analysis.primary_cta">
+              <h6 class="font-semibold text-gray-800 mb-2">Primary CTA</h6>
+              <div class="text-sm font-medium text-purple-600">"{{ analysisResult.cta_analysis.primary_cta.text }}"</div>
+              <div class="text-sm text-gray-600">Score: {{ Math.round(analysisResult.cta_analysis.primary_cta.score) }}/100</div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg border border-purple-100">
+              <h6 class="font-semibold text-gray-800 mb-2">A11y Issues</h6>
+              <div class="text-2xl font-bold text-purple-600">{{ analysisResult.accessibility_issues?.length || 0 }}</div>
+              <div class="text-sm text-gray-600">accessibility violations</div>
             </div>
           </div>
         </div>
@@ -202,7 +249,52 @@
               </div>
             </div>
             
-            <div v-if="(!analysisResult.visual_issues || analysisResult.visual_issues.length === 0) && (!analysisResult.visual_recommendations || analysisResult.visual_recommendations.length === 0)" class="text-center py-8">
+            <!-- Accessibility Issues -->
+            <div v-if="analysisResult.accessibility_issues && analysisResult.accessibility_issues.length > 0" class="mb-6">
+              <h5 class="font-semibold text-purple-800 mb-3">♿ Accessibility Issues ({{ analysisResult.accessibility_issues.length }})</h5>
+              <div class="space-y-3">
+                <div v-for="issue in analysisResult.accessibility_issues" :key="issue.element" class="bg-white p-4 rounded-lg border border-purple-200">
+                  <div class="flex items-start justify-between mb-2">
+                    <span :class="{
+                      'bg-red-100 text-red-800': issue.severity === 'high',
+                      'bg-yellow-100 text-yellow-800': issue.severity === 'medium',
+                      'bg-blue-100 text-blue-800': issue.severity === 'low'
+                    }" class="px-2 py-1 rounded-full text-xs font-medium">
+                      {{ issue.severity.toUpperCase() }}
+                    </span>
+                  </div>
+                  <p class="font-medium text-gray-800 mb-1">{{ issue.message }}</p>
+                  <p class="text-sm text-gray-600 mb-2">{{ issue.element }}</p>
+                  <p class="text-xs text-purple-700">💡 {{ issue.suggestion }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- CTA Issues -->
+            <div v-if="analysisResult.cta_analysis?.cta_issues && analysisResult.cta_analysis.cta_issues.length > 0" class="mb-6">
+              <h5 class="font-semibold text-orange-800 mb-3">🎯 CTA Issues ({{ analysisResult.cta_analysis.cta_issues.length }})</h5>
+              <div class="space-y-3">
+                <div v-for="issue in analysisResult.cta_analysis.cta_issues" :key="issue.element" class="bg-white p-4 rounded-lg border border-orange-200">
+                  <div class="flex items-start justify-between mb-2">
+                    <span :class="{
+                      'bg-red-100 text-red-800': issue.severity === 'high',
+                      'bg-yellow-100 text-yellow-800': issue.severity === 'medium',
+                      'bg-green-100 text-green-800': issue.severity === 'low'
+                    }" class="px-2 py-1 rounded-full text-xs font-medium">
+                      {{ issue.severity.toUpperCase() }}
+                    </span>
+                    <span v-if="issue.is_primary" class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+                      PRIMARY
+                    </span>
+                  </div>
+                  <p class="font-medium text-gray-800 mb-1">"{{ issue.text }}" - {{ issue.message }}</p>
+                  <p class="text-sm text-gray-600 mb-2">{{ issue.element }} • Score: {{ Math.round(issue.score) }}/100</p>
+                  <p class="text-xs text-orange-700">💡 {{ issue.suggestion }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div v-if="(!analysisResult.visual_issues || analysisResult.visual_issues.length === 0) && (!analysisResult.visual_recommendations || analysisResult.visual_recommendations.length === 0) && (!analysisResult.accessibility_issues || analysisResult.accessibility_issues.length === 0) && (!analysisResult.cta_analysis?.cta_issues || analysisResult.cta_analysis.cta_issues.length === 0)" class="text-center py-8">
               <span class="text-blue-600 text-4xl">✅</span>
               <p class="text-blue-700 font-medium mt-2">No visual issues found!</p>
               <p class="text-blue-600 text-sm">Your visual design is working well</p>
@@ -396,7 +488,7 @@ const analysisResult = ref(null)
 const errorMessage = ref('')
 
 // API configuration
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = 'http://localhost:8001'
 
 // Analysis function
 const analyzeWebsite = async () => {

@@ -13,19 +13,19 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 ClarityCheck API starting up...")
+    print("ClarityCheck API starting up...")
     
     # Install Playwright browsers on first run
     try:
         os.system("playwright install chromium")
-        print("✅ Playwright browsers installed")
+        print("Playwright browsers installed")
     except Exception as e:
-        print(f"⚠️  Playwright installation warning: {e}")
+        print(f"Playwright installation warning: {e}")
     
     yield
     
     # Shutdown
-    print("🛑 ClarityCheck API shutting down...")
+    print("ClarityCheck API shutting down...")
 
 # Create FastAPI app
 app = FastAPI(
